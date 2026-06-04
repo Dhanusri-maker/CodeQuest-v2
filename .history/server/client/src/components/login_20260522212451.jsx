@@ -1,0 +1,6 @@
+
+        </form>
+    );
+};
+
+export default Signup;
