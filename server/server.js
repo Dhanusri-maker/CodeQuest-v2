@@ -18,7 +18,7 @@ app.use('/api/ai-question', aiQuestionRoutes);
 app.use('/api/compiler',require('./routes/compiler'));
 const PORT = process.env.PORT || 5001;
 const DB_URI = process.env.MONGO_URI;
-mongoose.connect('mongodb://127.0.0.1:27017/CODEQUEST')
+mongoose.connect(DB_URI)
     .then(() => {
         console.log("MongoDB Database Connected Successfully!");
         app.listen(PORT, () => console.log("Server running smoothly on port 5001"));
