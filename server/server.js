@@ -16,6 +16,7 @@ app.use(cors({
     ],
     credentials: true
 }));
+app.options("*",cors());
 
 // ================= TEST ROUTE =================
 app.get("/", (req, res) => {
