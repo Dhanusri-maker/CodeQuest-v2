@@ -8,17 +8,21 @@ const app = express();
 // ================= MIDDLEWARE =================
 app.use(express.json());
 
-// 🔥 CORS FIX (Frontend Vercel)
+// ✅ CORS (Local + Production)
 app.use(cors({
-    origin: "https://codequest-v2.vercel.app", // உங்கள் frontend URL
+    origin: [
+        "http://localhost:3000",
+        "https://codequest-v2.vercel.app"
+    ],
     credentials: true
 }));
 
-// ================= ROUTES =================
+// ================= TEST ROUTE =================
 app.get("/", (req, res) => {
-    res.send("CodeQuest Backend Running Securely with Cloud DB");
+    res.send("CodeQuest Backend Running Successfully 🚀");
 });
 
+// ================= ROUTES =================
 app.use('/api/auth', require('./routes/auth'));
 
 const questionRoutes = require('./routes/question');
@@ -36,33 +40,26 @@ app.use('/api/compiler', require('./routes/compiler'));
 const PORT = process.env.PORT || 5001;
 const DB_URI = process.env.MONGO_URI;
 
-// 🔥 DEBUG LINE (VERY IMPORTANT)
-console.log("DB URI:", DB_URI);
+// 🔥 Debug
+console.log("DB URI Loaded:", DB_URI);
 
-// ❌ SAFETY CHECK
+// ❌ Safety check
 if (!DB_URI) {
-    console.log("❌ ERROR: MONGO_URI is missing in .env file");
+    console.log("❌ ERROR: MONGO_URI not found in .env");
     process.exit(1);
 }
 
 // ================= MONGO CONNECT =================
 mongoose.connect(DB_URI, {
-    serverSelectionTimeoutMS: 5000
+    serverSelectionTimeoutMS: 10000
 })
-.then(async () => {
+.then(() => {
+    console.log("MongoDB Database Connected Successfully! ✅");
 
-    console.log("MongoDB Database Connected Successfully!");
-
-    // ⚠️ DEBUG ONLY (remove in production later if needed)
-    const User = require('./models/User');
-    const users = await User.find();
-    console.log("ALL USERS:", users);
-
-    app.listen(PORT, () =>
-        console.log(`Server running on port ${PORT}`)
-    );
-
+    app.listen(PORT, () => {
+        console.log(`Server running on port ${PORT} 🚀`);
+    });
 })
 .catch((err) => {
-    console.log("MongoDB Connection Error:", err.message);
+    console.log("MongoDB Connection Error ❌:", err.message);
 });

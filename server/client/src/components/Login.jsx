@@ -16,7 +16,7 @@ const handleLogin = async (e) => {
     try {  
 
         const response = await axios.post(  
-            'http:codequest-v2.onrender.com/api/auth/login',  
+            'https://codequest-v2.onrender.com/api/auth/login',  
             {  
                 email,  
                 password  
