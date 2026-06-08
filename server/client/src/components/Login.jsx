@@ -4,114 +4,116 @@ import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
 
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+const [email, setEmail] = useState('');  
+const [password, setPassword] = useState('');  
 
-    const navigate = useNavigate();
+const navigate = useNavigate();  
 
-    const handleLogin = async (e) => {
+const handleLogin = async (e) => {  
 
-        e.preventDefault();
+    e.preventDefault();  
 
-        try {
+    try {  
 
-            const response = await axios.post(
-                'http://localhost:5001/api/auth/login',
-                {
-                    email,
-                    password
-                }
-            );
+        const response = await axios.post(  
+            'http:codequest-v2.onrender.com/api/auth/login',  
+            {  
+                email,  
+                password  
+            }  
+        );  
 
-            console.log(response.data);
+        console.log(response.data);  
 
-            localStorage.setItem('token', response.data.token);
+        localStorage.setItem('token', response.data.token);  
 
 
-            
+          
 
-            alert('Login Successful 🔥');
+        alert('Login Successful 🔥');  
 
-            navigate('/dashboard');
+        navigate('/dashboard');  
 
-        } catch (error) {
+    } catch (error) {  
 
-            console.log(error);
+        console.log("error response:",error.response?.data);  
+        console.log("Status:",error.response?.status);
 
-            alert('Login Failed ❌');
+        alert('Login Failed ❌');  
 
-        }
+    }  
 
-    };
+};  
 
-    return (
+return (  
 
-        <div
-            style={{
-                backgroundColor: '#0a0a1a',
-                color: 'white',
-                minHeight: '100vh',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                flexDirection: 'column'
-            }}
-        >
+    <div  
+        style={{  
+            backgroundColor: '#0a0a1a',  
+            color: 'white',  
+            minHeight: '100vh',  
+            display: 'flex',  
+            justifyContent: 'center',  
+            alignItems: 'center',  
+            flexDirection: 'column'  
+        }}  
+    >  
 
-            <h1>Welcome to CodeQuest</h1>
+        <h1>Welcome to CodeQuest</h1>  
 
-            <h3>Solve • Climb • Win 🚀</h3>
+        <h3>Solve • Climb • Win 🚀</h3>  
 
-            <form
-                onSubmit={handleLogin}
-                style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    width: '300px',
-                    gap: '10px'
-                }}
-            >
+        <form  
+            onSubmit={handleLogin}  
+            style={{  
+                display: 'flex',  
+                flexDirection: 'column',  
+                width: '300px',  
+                gap: '10px'  
+            }}  
+        >  
 
-                <input
-                    type="email"
-                    placeholder="Enter Email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    style={{
-                        padding: '10px'
-                    }}
-                />
+            <input  
+                type="email"  
+                placeholder="Enter Email"  
+                value={email}  
+                onChange={(e) => setEmail(e.target.value)}  
+                style={{  
+                    padding: '10px'  
+                }}  
+            />  
 
-                <input
-                    type="password"
-                    placeholder="Enter Password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    style={{
-                        padding: '10px'
-                    }}
-                />
+            <input  
+                type="password"  
+                placeholder="Enter Password"  
+                value={password}  
+                onChange={(e) => setPassword(e.target.value)}  
+                style={{  
+                    padding: '10px'  
+                }}  
+            />  
 
-                <button
-                    type="submit"
-                    style={{
-                        padding: '10px',
-                        backgroundColor: '#00d4ff',
-                        border: 'none',
-                        cursor: 'pointer'
-                    }}
-                >
+            <button  
+                type="submit"  
+                style={{  
+                    padding: '10px',  
+                    backgroundColor: '#00d4ff',  
+                    border: 'none',  
+                    cursor: 'pointer'  
+                }}  
+            >  
 
-                    Start Quiz
+                Start Quiz  
 
-                </button>
+            </button>  
 
-            </form>
+        </form>  
 
-        </div>
+    </div>  
 
-    );
+);
 
 };
 
 export default Login;
+

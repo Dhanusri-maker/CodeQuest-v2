@@ -9,7 +9,7 @@ const Leaderboard = () => {
     useEffect(() => {
 
         axios
-            .get('http://localhost:5001/api/leaderboard')
+            .get('http://codequest-v2.onrender.com/api/leaderboard')
 
             .then((res) => {
 

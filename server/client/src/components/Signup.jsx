@@ -9,7 +9,7 @@ const Signup = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.post('http://localhost:5001/api/auth/register', 
+            await axios.post('http://codequest-v2.onrender.com/api/auth/register', 
                 { name:name, email:email, password:password });
             alert("Signup Success!");
         } catch (err) {

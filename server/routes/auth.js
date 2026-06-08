@@ -48,10 +48,12 @@ router.post('/login', async (req, res) => {
     try {
 
         const { email, password } = req.body;
+        console.log("Login email:",email);
 
         const user = await User.findOne({
-            email: email.trim()
+            email: email.trim().toLowerCase()
         });
+        console.log("User found:",user);
 
         if (!user) {
             return res.status(400).json({

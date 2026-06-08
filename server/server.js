@@ -19,10 +19,18 @@ app.use('/api/compiler',require('./routes/compiler'));
 const PORT = process.env.PORT || 5001;
 const DB_URI = process.env.MONGO_URI;
 mongoose.connect(DB_URI)
-    .then(() => {
+    .then(async () => {
+
         console.log("MongoDB Database Connected Successfully!");
-        app.listen(PORT, () => console.log("Server running smoothly on port 5001"));
+
+        const User = require('./models/User');
+
+        const users = await User.find();
+
+        console.log("ALL USERS:", users);
+
+        app.listen(PORT, () =>
+            console.log("Server running smoothly on port 5001")
+        );
+
     })
-    .catch(err => {
-        console.error("Database connection error: ", err);
-    });

@@ -17,7 +17,7 @@ const fetchQuestion = async () => {
 try {
 
   const response = await axios.get(
-    `http://localhost:5001/api/ai-question/${category}`
+    `http://codequest-v2.onrender.com/api/ai-question/${category}`
   );
 
   setQuestion(response.data.question);
@@ -73,7 +73,7 @@ setLoading(true);
 try {
 
   const response = await axios.post(
-    "http://localhost:5001/api/compiler/run",
+    "http://codequest-v2.onrender.com/api/compiler/run",
     {
       language: category,
       code,
