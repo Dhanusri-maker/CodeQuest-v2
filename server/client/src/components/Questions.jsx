@@ -10,7 +10,7 @@ const Questions = ({ category }) => {
      console.log(category);
         if(category){
 
-            axios.get(`http://codequest-v2.onrender.com/api/questions/${category}`)
+            axios.get(`https://codequest-v2.onrender.com/api/questions/${category}`)
 
             .then((res) => {
                 console.log(res.data);

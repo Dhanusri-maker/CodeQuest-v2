@@ -73,7 +73,7 @@ setLoading(true);
 try {
 
   const response = await axios.post(
-    "http://codequest-v2.onrender.com/api/compiler/run",
+    "https://codequest-v2.onrender.com/api/compiler/run",
     {
       language: category,
       code,
