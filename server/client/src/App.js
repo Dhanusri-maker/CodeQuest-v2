@@ -17,8 +17,8 @@ function App() {
         <Route path="/questions" element={<Questions />} />
         <Route path="/questionPage" element={<QuestionPage />} />
         <Route path="/leaderboard" element={<Leaderboard />} />
-        <Routes path="/signup" element={<Signup />} />      
-        </Routes>
+        <Route path="/signup" element={<Signup />} />
+      </Routes>
     </BrowserRouter>
   );
 }
