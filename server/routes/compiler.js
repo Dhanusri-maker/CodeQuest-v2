@@ -6,11 +6,9 @@ const { exec } = require("child_process");
 const router = express.Router();
 
 router.post("/run", async (req, res) => {
+  console.log("RUN API HIT");
 
-console.log("RUN API HIT");
-
-try {
-
+  try {
     const { language, code, input = "" } = req.body;
 
     console.log("LANGUAGE =", language);
@@ -19,129 +17,91 @@ try {
     const tempDir = path.join(__dirname, "../temp");
 
     if (!fs.existsSync(tempDir)) {
-        fs.mkdirSync(tempDir);
+      fs.mkdirSync(tempDir);
     }
 
-    // JAVA
+    // ================= JAVA =================
     if (language === "java") {
+      const javaFile = path.join(tempDir, "Main.java");
+      fs.writeFileSync(javaFile, code);
 
-        const javaFile = path.join(tempDir, "Main.java");
+      exec(
+        `cd "${tempDir}" && javac Main.java && java Main`,
+        (error, stdout, stderr) => {
+          if (error) {
+            return res.json({
+              output: stderr || error.message,
+            });
+          }
 
-        fs.writeFileSync(javaFile, code);
-
-        exec(
-            `docker run --rm -i -v "${tempDir}:/app" eclipse-temurin:17 bash -c "cd /app && javac Main.java && java Main"`,
-
-            (error, stdout, stderr) => {
-
-                if (error) {
-
-                    return res.json({
-                        output: stderr || error.message
-                    });
-
-                }
-
-                res.json({
-                    output: stdout
-                });
-
-            }
-        );
-
+          res.json({
+            output: stdout,
+          });
+        }
+      );
     }
 
-    // PYTHON
+    // ================= PYTHON =================
     else if (
-        language === "python" ||
-        language === "ai" ||
-        language === "iot"
+      language === "python" ||
+      language === "ai" ||
+      language === "iot"
     ) {
+      const pyFile = path.join(tempDir, "main.py");
+      fs.writeFileSync(pyFile, code);
 
-        const pyFile = path.join(tempDir, "main.py");
+      const escapedInput = input.replace(/'/g, "'\\''");
 
-        fs.writeFileSync(pyFile, code);
+      exec(
+        `cd "${tempDir}" && echo '${escapedInput}' | python3 main.py`,
+        (error, stdout, stderr) => {
+          if (error) {
+            return res.json({
+              output: stderr || error.message,
+            });
+          }
 
-        const escapedInput = input.replace(/'/g, "'\\''");
-
-        exec(
-
-            `docker run --rm -v "${tempDir}:/app" python:3.10 bash -c "echo '${escapedInput}' | python /app/main.py"`,
-
-            (error, stdout, stderr) => {
-
-                if (error) {
-
-                    return res.json({
-                        output: stderr || error.message
-                    });
-
-                }
-
-                res.json({
-                    output: stdout
-                });
-
-            }
-
-        );
-
+          res.json({
+            output: stdout,
+          });
+        }
+      );
     }
 
-    // FRONTEND & BACKEND
-    else if (
-        language === "frontend" ||
-        language === "backend"
-    ) {
+    // ================= NODE / FRONTEND / BACKEND =================
+    else if (language === "frontend" || language === "backend") {
+      const jsFile = path.join(tempDir, "main.js");
+      fs.writeFileSync(jsFile, code);
 
-        const jsFile = path.join(tempDir, "main.js");
+      exec(
+        `cd "${tempDir}" && node main.js`,
+        (error, stdout, stderr) => {
+          if (error) {
+            return res.json({
+              output: stderr || error.message,
+            });
+          }
 
-        fs.writeFileSync(jsFile, code);
-
-        exec(
-
-            `docker run --rm -v "${tempDir}:/app" node:20 bash -c "node /app/main.js"`,
-
-            (error, stdout, stderr) => {
-
-                if (error) {
-
-                    return res.json({
-                        output: stderr || error.message
-                    });
-
-                }
-
-                res.json({
-                    output: stdout
-                });
-
-            }
-
-        );
-
+          res.json({
+            output: stdout,
+          });
+        }
+      );
     }
 
+    // ================= DEFAULT =================
     else {
-
-        res.json({
-            output: "Language not supported"
-        });
-
+      res.json({
+        output: "Language not supported",
+      });
     }
-
-}
-
-catch (err) {
-
+  } catch (err) {
     console.log(err);
 
     res.status(500).json({
-        output: "Code execution failed"
+      output: "Code execution failed",
     });
-
-}
-
+  }
 });
 
 module.exports = router;
