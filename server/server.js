@@ -8,9 +8,9 @@ const app = express();
 // ================= MIDDLEWARE =================
 app.use(express.json());
 
-// ✅ CORS FIX (IMPORTANT for Vercel + Render)
+// 🔥 CORS FIX (Frontend Vercel)
 app.use(cors({
-    origin: "https://codequest-v2.vercel.app", // 🔴 change this
+    origin: "https://codequest-v2.vercel.app", // உங்கள் frontend URL
     credentials: true
 }));
 
@@ -36,21 +36,33 @@ app.use('/api/compiler', require('./routes/compiler'));
 const PORT = process.env.PORT || 5001;
 const DB_URI = process.env.MONGO_URI;
 
-mongoose.connect(DB_URI)
-    .then(async () => {
+// 🔥 DEBUG LINE (VERY IMPORTANT)
+console.log("DB URI:", DB_URI);
 
-        console.log("MongoDB Database Connected Successfully!");
+// ❌ SAFETY CHECK
+if (!DB_URI) {
+    console.log("❌ ERROR: MONGO_URI is missing in .env file");
+    process.exit(1);
+}
 
-        // ⚠️ (optional debug only - remove in production if needed)
-        const User = require('./models/User');
-        const users = await User.find();
-        console.log("ALL USERS:", users);
+// ================= MONGO CONNECT =================
+mongoose.connect(DB_URI, {
+    serverSelectionTimeoutMS: 5000
+})
+.then(async () => {
 
-        app.listen(PORT, () =>
-            console.log(`Server running on port ${PORT}`)
-        );
+    console.log("MongoDB Database Connected Successfully!");
 
-    })
-    .catch((err) => {
-        console.log("DB Connection Error:", err);
-    });
+    // ⚠️ DEBUG ONLY (remove in production later if needed)
+    const User = require('./models/User');
+    const users = await User.find();
+    console.log("ALL USERS:", users);
+
+    app.listen(PORT, () =>
+        console.log(`Server running on port ${PORT}`)
+    );
+
+})
+.catch((err) => {
+    console.log("MongoDB Connection Error:", err.message);
+});
