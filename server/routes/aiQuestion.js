@@ -5,6 +5,9 @@ const router = express.Router();
 
 router.get("/:category", async (req, res) => {
   try {
+    console.log("API KEY:",
+        process.env.OPENROUTER_API_KEY
+    );
     const { category } = req.params;
 
     let prompt = "";
