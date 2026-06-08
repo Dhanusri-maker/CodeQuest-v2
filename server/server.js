@@ -8,12 +8,20 @@ const app = express();
 // ================= MIDDLEWARE =================
 app.use(express.json());
 
-// ✅ CORS (Local + Production)
+// ================= CORS (SAFE PRODUCTION FIX) =================
+const allowedOrigins = [
+    "http://localhost:3000",
+    "https://code-quest-v2.vercel.app"
+];
+
 app.use(cors({
-    origin: [
-        "http://localhost:3000",
-        "https://codequest-v2.vercel.app"
-    ],
+    origin: function (origin, callback) {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error("CORS blocked"));
+        }
+    },
     credentials: true
 }));
 
@@ -23,33 +31,24 @@ app.get("/", (req, res) => {
 });
 
 // ================= ROUTES =================
-app.use('/api/auth', require('./routes/auth'));
+app.use("/api/auth", require("./routes/auth"));
+app.use("/api/questions", require("./routes/question"));
+app.use("/api/leaderboard", require("./routes/leaderboard"));
+app.use("/api/ai-question", require("./routes/aiQuestion"));
+app.use("/api/compiler", require("./routes/compiler"));
 
-const questionRoutes = require('./routes/question');
-app.use('/api/questions', questionRoutes);
-
-const leaderboardRoutes = require('./routes/leaderboard');
-app.use('/api/leaderboard', leaderboardRoutes);
-
-const aiQuestionRoutes = require('./routes/aiQuestion');
-app.use('/api/ai-question', aiQuestionRoutes);
-
-app.use('/api/compiler', require('./routes/compiler'));
-
-// ================= DB & SERVER =================
+// ================= DB CONNECTION =================
 const PORT = process.env.PORT || 5001;
 const DB_URI = process.env.MONGO_URI;
 
-// 🔥 Debug
 console.log("DB URI Loaded:", DB_URI);
 
-// ❌ Safety check
+// safety check
 if (!DB_URI) {
-    console.log("❌ ERROR: MONGO_URI not found in .env");
+    console.log("❌ MONGO_URI missing in environment variables");
     process.exit(1);
 }
 
-// ================= MONGO CONNECT =================
 mongoose.connect(DB_URI, {
     serverSelectionTimeoutMS: 10000
 })
