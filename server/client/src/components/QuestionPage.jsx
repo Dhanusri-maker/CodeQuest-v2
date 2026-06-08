@@ -17,7 +17,7 @@ const fetchQuestion = async () => {
 try {
 
   const response = await axios.get(
-    `http://codequest-v2.onrender.com/api/ai-question/${category}`
+    `https://codequest-v2.onrender.com/api/ai-question/${category}`
   );
 
   setQuestion(response.data.question);
