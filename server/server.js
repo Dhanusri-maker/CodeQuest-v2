@@ -10,24 +10,24 @@ app.use(express.json());
 
 // ================= CORS (SAFE PRODUCTION FIX) =================
 const allowedOrigins = [
-    "http://localhost:3000",
-    "https://code-quest-v2.vercel.app"
+"http://localhost:3000",
+"https://code-quest-v2.vercel.app"
 ];
 
 app.use(cors({
-    origin: function (origin, callback) {
-        if (!origin || allowedOrigins.includes(origin)) {
-            callback(null, true);
-        } else {
-            callback(new Error("CORS blocked"));
-        }
-    },
-    credentials: true
+origin: function (origin, callback) {
+if (!origin || allowedOrigins.includes(origin)) {
+callback(null, true);
+} else {
+callback(new Error("CORS blocked"));
+}
+},
+credentials: true
 }));
 
 // ================= TEST ROUTE =================
 app.get("/", (req, res) => {
-    res.send("CodeQuest Backend Running Successfully 🚀");
+res.send("CodeQuest Backend Running Successfully 🚀");
 });
 
 // ================= ROUTES =================
@@ -45,20 +45,21 @@ console.log("DB URI Loaded:", DB_URI);
 
 // safety check
 if (!DB_URI) {
-    console.log("❌ MONGO_URI missing in environment variables");
-    process.exit(1);
+console.log("❌ MONGO_URI missing in environment variables");
+process.exit(1);
 }
 
 mongoose.connect(DB_URI, {
-    serverSelectionTimeoutMS: 10000
+serverSelectionTimeoutMS: 10000
 })
 .then(() => {
-    console.log("MongoDB Database Connected Successfully! ✅");
+console.log("MongoDB Database Connected Successfully! ✅");
 
-    app.listen(PORT, () => {
-        console.log(`Server running on port ${PORT} 🚀`);
-    });
+app.listen(PORT, () => {  
+    console.log(`Server running on port ${PORT} 🚀`);  
+});
+
 })
 .catch((err) => {
-    console.log("MongoDB Connection Error ❌:", err.message);
+console.log("MongoDB Connection Error ❌:", err.message);
 });

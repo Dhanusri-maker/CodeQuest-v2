@@ -1,119 +1,87 @@
-import React, { useState } from 'react';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
-const [email, setEmail] = useState('');  
-const [password, setPassword] = useState('');  
+  const API_URL = "https://codequest-v2.onrender.com";
 
-const navigate = useNavigate();  
+  // ================= REAL LOGIN =================
+  const handleLogin = async () => {
+    try {
+      setLoading(true);
 
-const handleLogin = async (e) => {  
+      const res = await axios.post(`${API_URL}/api/auth/login`, {
+        email,
+        password,
+      });
 
-    e.preventDefault();  
+      localStorage.setItem("token", res.data.token);
+      localStorage.setItem("user", JSON.stringify(res.data.user));
 
-    try {  
+      navigate("/dashboard");
+    } catch (err) {
+      alert("Login failed ❌");
+      console.log(err.response?.data || err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-        const response = await axios.post(  
-            'https://codequest-v2.onrender.com/api/auth/login',  
-            {  
-                email,  
-                password  
-            }  
-        );  
+  // ================= GUEST LOGIN =================
+  const handleGuestLogin = () => {
+    const guestUser = {
+      email: "guest@codequest.com",
+      name: "Guest User",
+    };
 
-        console.log(response.data);  
+    localStorage.setItem("token", "guest-token");
+    localStorage.setItem("user", JSON.stringify(guestUser));
 
-        localStorage.setItem('token', response.data.token);  
+    navigate("/dashboard");
+  };
 
+  return (
+    <div style={{ textAlign: "center", marginTop: "100px" }}>
+      <h2>CodeQuest Login</h2>
 
-          
+      <input
+        type="email"
+        placeholder="Email"
+        onChange={(e) => setEmail(e.target.value)}
+      />
+      <br />
 
-        alert('Login Successful 🔥');  
+      <input
+        type="password"
+        placeholder="Password"
+        onChange={(e) => setPassword(e.target.value)}
+      />
+      <br />
 
-        navigate('/dashboard');  
+      <button onClick={handleLogin} disabled={loading}>
+        {loading ? "Logging in..." : "Login"}
+      </button>
 
-    } catch (error) {  
+      <br /><br />
 
-        console.log("error response:",error.response?.data);  
-        console.log("Status:",error.response?.status);
-
-        alert('Login Failed ❌');  
-
-    }  
-
-};  
-
-return (  
-
-    <div  
-        style={{  
-            backgroundColor: '#0a0a1a',  
-            color: 'white',  
-            minHeight: '100vh',  
-            display: 'flex',  
-            justifyContent: 'center',  
-            alignItems: 'center',  
-            flexDirection: 'column'  
-        }}  
-    >  
-
-        <h1>Welcome to CodeQuest</h1>  
-
-        <h3>Solve • Climb • Win 🚀</h3>  
-
-        <form  
-            onSubmit={handleLogin}  
-            style={{  
-                display: 'flex',  
-                flexDirection: 'column',  
-                width: '300px',  
-                gap: '10px'  
-            }}  
-        >  
-
-            <input  
-                type="email"  
-                placeholder="Enter Email"  
-                value={email}  
-                onChange={(e) => setEmail(e.target.value)}  
-                style={{  
-                    padding: '10px'  
-                }}  
-            />  
-
-            <input  
-                type="password"  
-                placeholder="Enter Password"  
-                value={password}  
-                onChange={(e) => setPassword(e.target.value)}  
-                style={{  
-                    padding: '10px'  
-                }}  
-            />  
-
-            <button  
-                type="submit"  
-                style={{  
-                    padding: '10px',  
-                    backgroundColor: '#00d4ff',  
-                    border: 'none',  
-                    cursor: 'pointer'  
-                }}  
-            >  
-
-                Start Quiz  
-
-            </button>  
-
-        </form>  
-
-    </div>  
-
-);
-
+      {/* GUEST LOGIN BUTTON */}
+      <button
+        onClick={handleGuestLogin}
+        style={{
+          backgroundColor: "gray",
+          color: "white",
+          padding: "10px",
+        }}
+      >
+        Continue as Guest
+      </button>
+    </div>
+  );
 };
 
 export default Login;
-
