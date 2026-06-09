@@ -5,10 +5,16 @@ const path = require("path");
 
 const router = express.Router();
 
+// ================= SAFE EXEC OPTIONS =================
+const execOptions = {
+  timeout: 10000,
+  env: process.env
+};
+
 // helper: run command safely
-const runCommand = (cmd, timeout = 10000) => {
+const runCommand = (cmd) => {
   return new Promise((resolve) => {
-    exec(cmd, { timeout }, (err, stdout, stderr) => {
+    exec(cmd, execOptions, (err, stdout, stderr) => {
       if (err) return resolve(stderr || err.message);
       resolve(stdout);
     });
@@ -52,16 +58,9 @@ router.post("/run", async (req, res) => {
 
       fs.writeFileSync(filePath, code);
 
-      output = await new Promise((resolve) => {
-        exec(
-          `cd ${tempDir} && javac Main.java && java Main`,
-          { timeout: 10000 },
-          (err, stdout, stderr) => {
-            if (err) return resolve(stderr || err.message);
-            resolve(stdout);
-          }
-        );
-      });
+      output = await runCommand(
+        `cd ${tempDir} && javac Main.java && java Main`
+      );
     }
 
     // ================= UNSUPPORTED =================
@@ -70,6 +69,7 @@ router.post("/run", async (req, res) => {
     }
 
     return res.json({ output: output.toString() });
+
   } catch (err) {
     console.log("ERROR:", err.message);
     return res.status(500).json({ output: "Execution failed" });
