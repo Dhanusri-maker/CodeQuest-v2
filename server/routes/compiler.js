@@ -1,24 +1,25 @@
 const express = require("express");
-const { exec } = require("child_process");
-const fs = require("fs");
-const path = require("path");
+const axios = require("axios");
 
 const router = express.Router();
 
-// ================= SAFE EXEC OPTIONS =================
-const execOptions = {
-  timeout: 10000,
-  env: process.env
-};
-
-// helper: run command safely
-const runCommand = (cmd) => {
-  return new Promise((resolve) => {
-    exec(cmd, execOptions, (err, stdout, stderr) => {
-      if (err) return resolve(stderr || err.message);
-      resolve(stdout);
+// ================= PISTON EXECUTOR =================
+const runPiston = async (language, code) => {
+  try {
+    const response = await axios.post("https://emkc.org/api/v2/piston/execute", {
+      language: language,
+      version: "*",
+      files: [
+        {
+          content: code,
+        },
+      ],
     });
-  });
+
+    return response.data.run.output;
+  } catch (err) {
+    return err.response?.data?.message || err.message;
+  }
 };
 
 // ================= MAIN ROUTE =================
@@ -33,34 +34,26 @@ router.post("/run", async (req, res) => {
     let output = "";
 
     // ================= NODE JS =================
-    if (language === "node" || language === "frontend" || language === "backend") {
-      const safeCode = code.replace(/"/g, '\\"');
-
-      output = await runCommand(`node -e "${safeCode}"`);
+    if (language === "node" || language === "javascript") {
+      output = await runPiston("javascript", code);
     }
 
     // ================= PYTHON =================
     else if (language === "python" || language === "ai" || language === "iot") {
-      const safeCode = code.replace(/"/g, '\\"');
-
-      output = await runCommand(`python -c "${safeCode}"`);
+      output = await runPiston("python", code);
     }
 
     // ================= JAVA =================
     else if (language === "java") {
-      const tempDir = path.join(__dirname, "temp");
+      output = await runPiston("java", code);
+    }
 
-      if (!fs.existsSync(tempDir)) {
-        fs.mkdirSync(tempDir);
-      }
-
-      const filePath = path.join(tempDir, "Main.java");
-
-      fs.writeFileSync(filePath, code);
-
-      output = await runCommand(
-        `cd ${tempDir} && javac Main.java && java Main`
-      );
+    // ================= C / CPP (optional future) =================
+    else if (language === "c") {
+      output = await runPiston("c", code);
+    } 
+    else if (language === "cpp") {
+      output = await runPiston("cpp", code);
     }
 
     // ================= UNSUPPORTED =================

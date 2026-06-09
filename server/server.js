@@ -30,12 +30,12 @@ app.get("/", (req, res) => {
 res.send("CodeQuest Backend Running Successfully 🚀");
 });
 
-// ================= ROUTES =================
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/questions", require("./routes/question"));
 app.use("/api/leaderboard", require("./routes/leaderboard"));
 app.use("/api/ai-question", require("./routes/aiQuestion"));
 app.use("/api/compiler", require("./routes/compiler"));
+
 
 // ================= DB CONNECTION =================
 const PORT = process.env.PORT || 5001;
