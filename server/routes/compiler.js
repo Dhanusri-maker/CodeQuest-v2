@@ -5,16 +5,17 @@ const path = require("path");
 
 const router = express.Router();
 
-// helper: run docker safely
-const runDocker = (cmd) => {
+// helper: run command safely
+const runCommand = (cmd, timeout = 10000) => {
   return new Promise((resolve) => {
-    exec(cmd, { timeout: 10000 }, (err, stdout, stderr) => {
+    exec(cmd, { timeout }, (err, stdout, stderr) => {
       if (err) return resolve(stderr || err.message);
-      return resolve(stdout);
+      resolve(stdout);
     });
   });
 };
 
+// ================= MAIN ROUTE =================
 router.post("/run", async (req, res) => {
   try {
     let { language, code } = req.body;
@@ -27,36 +28,48 @@ router.post("/run", async (req, res) => {
 
     // ================= NODE JS =================
     if (language === "node" || language === "frontend" || language === "backend") {
-      output = await runDocker(
-        `docker run --rm node:20 node -e "${code.replace(/"/g, '\\"')}"`
-      );
+      const safeCode = code.replace(/"/g, '\\"');
+
+      output = await runCommand(`node -e "${safeCode}"`);
     }
 
     // ================= PYTHON =================
     else if (language === "python" || language === "ai" || language === "iot") {
-      output = await runDocker(
-        `docker run --rm python:3.10 python -c "${code.replace(/"/g, '\\"')}"`
-      );
+      const safeCode = code.replace(/"/g, '\\"');
+
+      output = await runCommand(`python -c "${safeCode}"`);
     }
 
     // ================= JAVA =================
     else if (language === "java") {
       const tempDir = path.join(__dirname, "temp");
-      if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir);
+
+      if (!fs.existsSync(tempDir)) {
+        fs.mkdirSync(tempDir);
+      }
 
       const filePath = path.join(tempDir, "Main.java");
+
       fs.writeFileSync(filePath, code);
 
-      output = await runDocker(
-        `docker run --rm -v ${filePath}:/app/Main.java -w /app amazoncorretto:17 javac Main.java && java Main`
-      );
+      output = await new Promise((resolve) => {
+        exec(
+          `cd ${tempDir} && javac Main.java && java Main`,
+          { timeout: 10000 },
+          (err, stdout, stderr) => {
+            if (err) return resolve(stderr || err.message);
+            resolve(stdout);
+          }
+        );
+      });
     }
 
+    // ================= UNSUPPORTED =================
     else {
       output = "Unsupported language";
     }
 
-    return res.json({ output });
+    return res.json({ output: output.toString() });
   } catch (err) {
     console.log("ERROR:", err.message);
     return res.status(500).json({ output: "Execution failed" });
