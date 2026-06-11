@@ -1,72 +1,148 @@
 const express = require("express");
-const axios = require("axios");
+const { exec, spawn } = require("child_process");
+const fs = require("fs");
+const path = require("path");
 
 const router = express.Router();
+console.log("compiler.js loaded");
 
-// ================= PISTON EXECUTOR =================
-const runPiston = async (language, code) => {
-  try {
-    const response = await axios.post("https://emkc.org/api/v2/piston/execute", {
-      language: language,
-      version: "*",
-      files: [
-        {
-          content: code,
-        },
-      ],
-    });
-
-    return response.data.run.output;
-  } catch (err) {
-    return err.response?.data?.message || err.message;
-  }
-};
-
-// ================= MAIN ROUTE =================
 router.post("/run", async (req, res) => {
+  console.log("/run API called");
   try {
-    let { language, code } = req.body;
+    const { language, code, input } = req.body;
 
     if (!code) {
-      return res.json({ output: "No code provided" });
+      return res.json({
+        output: "No code provided",
+      });
     }
 
-    let output = "";
+    const tempDir = path.join(__dirname, "..", "temp");
 
-    // ================= NODE JS =================
-    if (language === "node" || language === "javascript") {
-      output = await runPiston("javascript", code);
+    if (!fs.existsSync(tempDir)) {
+      fs.mkdirSync(tempDir, { recursive: true });
     }
-
-    // ================= PYTHON =================
-    else if (language === "python" || language === "ai" || language === "iot") {
-      output = await runPiston("python", code);
-    }
-
     // ================= JAVA =================
-    else if (language === "java") {
-      output = await runPiston("java", code);
-    }
 
-    // ================= C / CPP (optional future) =================
-    else if (language === "c") {
-      output = await runPiston("c", code);
-    } 
-    else if (language === "cpp") {
-      output = await runPiston("cpp", code);
-    }
+    if (language === "java") {
+      const filePath = path.join(tempDir, "Main.java");
+      fs.writeFileSync(filePath, code);
 
-    // ================= UNSUPPORTED =================
+      exec(`cd "${tempDir}" && javac Main.java`, (err) => {
+
+        if (err) {
+          return res.json({
+            output: err.message,
+          });
+        }
+        console.log("Starting java....");
+
+        const javaProcess = spawn("java", [
+          "-cp",
+          tempDir,
+          "Main",
+        ]);
+
+        let stdout = "";
+        let stderr = "";
+
+        javaProcess.stdout.on("data", (data) => {
+          stdout += data.toString();
+        });
+
+        javaProcess.stderr.on("data", (data) => {
+          stderr += data.toString();
+        });
+
+        if (input) {
+          javaProcess.stdin.write(input + "\n");
+        }
+
+        javaProcess.stdin.end();
+
+        javaProcess.on("close", () => {
+          console.log("Java Closed");
+
+          if (stderr) {
+            return res.json({
+              output: stderr,
+            });
+          }
+
+          return res.json({
+            output: stdout,
+          });
+
+        });
+
+      });
+    }
+    // ================= PYTHON =================
+
+    else if (language === "python") {
+
+      const filePath = path.join(tempDir, "main.py");
+
+      fs.writeFileSync(filePath, code);
+
+      exec(
+        `python "${filePath}"`,
+        { timeout: 10000 },
+        (err, stdout, stderr) => {
+
+          if (err) {
+            return res.json({
+              output: stderr || err.message,
+            });
+          }
+
+          return res.json({
+            output: stdout,
+          });
+
+        }
+      );
+
+    }
+    // ================= NODE =================
+
+    else if (language === "node") {
+
+      exec(
+        `node -e "${code.replace(/"/g, '\\"')}"`,
+        { timeout: 10000 },
+        (err, stdout, stderr) => {
+
+          if (err) {
+            return res.json({
+              output: stderr || err.message,
+            });
+          }
+
+          return res.json({
+            output: stdout,
+          });
+
+        }
+      );
+
+    }
     else {
-      output = "Unsupported language";
-    }
 
-    return res.json({ output: output.toString() });
+      return res.json({
+        output: "Language not supported",
+      });
+
+    }
 
   } catch (err) {
-    console.log("ERROR:", err.message);
-    return res.status(500).json({ output: "Execution failed" });
+
+    return res.json({
+      output: err.message,
+    });
+
   }
+
 });
 
 module.exports = router;

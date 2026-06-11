@@ -2,6 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
+const executeRoutes = require("./routes/execute");
 
 const app = express();
 
@@ -36,6 +37,7 @@ app.use("/api/questions", require("./routes/question"));
 app.use("/api/leaderboard", require("./routes/leaderboard"));
 app.use("/api/ai-question", require("./routes/aiQuestion"));
 app.use("/api/compiler", require("./routes/compiler"));
+app.use("/api/execute",executeRoutes);
 
 // ================= TEST ROUTE =================
 app.get("/", (req, res) => {

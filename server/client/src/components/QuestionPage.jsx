@@ -62,48 +62,62 @@ useEffect(() => {
 }, [timeLeft]);
 
 const runCode = async () => {
-
-if (code.trim() === "") {
-  setOutput("Please write code");
-  return;
-}
-
-setLoading(true);
-
-try {
-
-  const response = await axios.post(
-    "https://codequest-v2.onrender.com/api/compiler/run",
-    {
-      language: category,
-      code,
-      input
-    }
-  );
-
-  const result = response.data.output || "";
-
-  setOutput(result);
-
-  if (
-    !result.toLowerCase().includes("error") &&
-    !result.toLowerCase().includes("exception")
-  ) {
-
-    setScore((prev) => prev + 10);
-    setCanNext(true);
-
+  console.log("Run button clicked");
+  if (code.trim() === "") {
+    setOutput("Please write code");
+    return;
   }
 
-} catch (error) {
+  setLoading(true);
 
-  console.log(error);
-  setOutput("Code Execution Failed");
+  try {
+    let url = "";
 
-}
+    if (category === "java") {
+      url = "http://localhost:5001/api/execute/java";
+    } else if (category === "python") {
+      uri = "http://localhost:5001/api/execute/python";
+    } else {
+      setOutput("Language not supported");
+      setLoading(false);
+      return;
+    }
 
-setLoading(false);
+    const response = await axios.post(
+       "http://localhost:5001/api/compiler/run",
+       {
+        language:category,
+      code,
+      input,
+    });
 
+    const result =
+      response.data.output ||
+      response.data.message ||
+      response.data.error ||
+      "";
+
+    setOutput(result);
+
+    if (
+      result &&
+      !result.toLowerCase().includes("error") &&
+      !result.toLowerCase().includes("exception")
+    ) {
+      setScore((prev) => prev + 10);
+      setCanNext(true);
+    }
+  } catch (error) {
+    console.log(error);
+
+    setOutput(
+      error?.response?.data?.error ||
+        error?.response?.data?.message ||
+        "Code Execution Failed"
+    );
+  }
+
+  setLoading(false);
 };
 
 const nextQuestion = () => {
