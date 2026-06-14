@@ -74,9 +74,9 @@ const runCode = async () => {
     let uri = "";
 
     if (category === "java") {
-      uri = "https://codequest-v2.onrender.com/api/execute/java";
+      uri = "http://localhost:5001/api/execute/java";
     } else if (category === "python") {
-      uri = "https://codequest-v2.onrender.com/api/execute/python";
+      uri = "http://localhost:5001/api/execute/python";
     } else {
       setOutput("Language not supported");
       setLoading(false);
@@ -84,7 +84,7 @@ const runCode = async () => {
     }
 
     const response = await axios.post(
-       "https://codequest-v2.onrender.com/api/compiler/run",
+       "http://localhost:5001api/compiler/run",
        {
         language:category,
       code,
