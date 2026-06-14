@@ -1,13 +1,13 @@
-const express = require("express");
-const { exec, spawn } = require("child_process");
-const fs = require("fs");
-const path = require("path");
+compiler .js
 
+
+const express = require("express");
+const axios = require("axios");
 const router = express.Router();
-console.log("compiler.js loaded");
+
+console.log("compiler.js loaded (using Piston API)");
 
 router.post("/run", async (req, res) => {
-  console.log("/run API called");
   try {
     const { language, code, input } = req.body;
 
@@ -17,132 +17,36 @@ router.post("/run", async (req, res) => {
       });
     }
 
-    const tempDir = path.join(__dirname, "..", "temp");
-
-    if (!fs.existsSync(tempDir)) {
-      fs.mkdirSync(tempDir, { recursive: true });
+    // Map language names if necessary (e.g., node -> javascript)
+    let pistonLanguage = language;
+    if (language === "node") {
+      pistonLanguage = "javascript";
     }
-    // ================= JAVA =================
 
-    if (language === "java") {
-      const filePath = path.join(tempDir, "Main.java");
-      fs.writeFileSync(filePath, code);
-
-      exec(`cd "${tempDir}" && javac Main.java`, (err) => {
-
-        if (err) {
-          return res.json({
-            output: err.message,
-          });
+    // Call Piston API
+    const response = await axios.post("https://emkc.org/api/v2/piston/execute", {
+      language: pistonLanguage,
+      version: "*", // Use latest version available
+      files: [
+        {
+          content: code
         }
-        console.log("Starting java....");
-
-        const javaProcess = spawn("java", [
-          "-cp",
-          tempDir,
-          "Main",
-        ]);
-
-        let stdout = "";
-        let stderr = "";
-
-        javaProcess.stdout.on("data", (data) => {
-          stdout += data.toString();
-        });
-
-        javaProcess.stderr.on("data", (data) => {
-          stderr += data.toString();
-        });
-
-        if (input) {
-          javaProcess.stdin.write(input + "\n");
-        }
-
-        javaProcess.stdin.end();
-
-        javaProcess.on("close", () => {
-          console.log("Java Closed");
-
-          if (stderr) {
-            return res.json({
-              output: stderr,
-            });
-          }
-
-          return res.json({
-            output: stdout,
-          });
-
-        });
-
-      });
-    }
-    // ================= PYTHON =================
-
-    else if (language === "python") {
-
-      const filePath = path.join(tempDir, "main.py");
-
-      fs.writeFileSync(filePath, code);
-
-      exec(
-        `python "${filePath}"`,
-        { timeout: 10000 },
-        (err, stdout, stderr) => {
-
-          if (err) {
-            return res.json({
-              output: stderr || err.message,
-            });
-          }
-
-          return res.json({
-            output: stdout,
-          });
-
-        }
-      );
-
-    }
-    // ================= NODE =================
-
-    else if (language === "node") {
-
-      exec(
-        `node -e "${code.replace(/"/g, '\\"')}"`,
-        { timeout: 10000 },
-        (err, stdout, stderr) => {
-
-          if (err) {
-            return res.json({
-              output: stderr || err.message,
-            });
-          }
-
-          return res.json({
-            output: stdout,
-          });
-
-        }
-      );
-
-    }
-    else {
-
-      return res.json({
-        output: "Language not supported",
-      });
-
-    }
-
-  } catch (err) {
-
-    return res.json({
-      output: err.message,
+      ],
+      stdin: input || ""
     });
 
-  }
+    // Extract output from Piston API response
+    const runResult = response.data.run;
+    const output = runResult.output || runResult.stderr || runResult.stdout || "Success (No Output)";
 
+    return res.json({ output });
+
+  } catch (err) {
+    console.error("Compilation Error:", err.message);
+    return res.json({
+      output: `Server/API Error: ${err.message}`
+    });
+  }
 });
 
 module.exports = router;

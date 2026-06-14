@@ -52,7 +52,7 @@ if (!DB_URI) {
   console.log("❌ MONGO_URI missing");
   process.exit(1);
 }
-
+console.log("DB_URI =",process.env.MONGO_URI);
 mongoose.connect(DB_URI, {
   serverSelectionTimeoutMS: 10000
 })

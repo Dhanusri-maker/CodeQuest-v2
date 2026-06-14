@@ -1,9 +1,7 @@
-const express = require("express");
-const fs = require("fs");
-const path = require("path");
-const { exec } = require("child_process");
-const { v4: uuidv4 } = require("uuid");
+excute.js 
 
+const express = require("express");
+const axios = require("axios");
 const router = express.Router();
 
 router.post("/java", async (req, res) => {
@@ -17,35 +15,31 @@ router.post("/java", async (req, res) => {
       });
     }
 
-    // Unique folder
-    const id = uuidv4();
-    const dirPath = path.join(__dirname, "../temp", id);
+    // Call Piston API to execute Java code
+    const response = await axios.post("https://emkc.org/api/v2/piston/execute", {
+      language: "java",
+      version: "*",
+      files: [
+        {
+          content: code,
+        },
+      ],
+    });
 
-    fs.mkdirSync(dirPath, { recursive: true });
+    const runResult = response.data.run;
+    const output = runResult.output || runResult.stderr || runResult.stdout || "";
 
-    const filePath = path.join(dirPath, "Main.java");
-    fs.writeFileSync(filePath, code);
+    if (runResult.code !== 0) {
+      return res.json({
+        success: false,
+        error: output,
+      });
+    }
 
-    // Compile + Run
-    exec(
-      `javac "${filePath}" && java -cp "${dirPath}" Main`,
-      (error, stdout, stderr) => {
-        // Cleanup
-        fs.rmSync(dirPath, { recursive: true, force: true });
-
-        if (error) {
-          return res.json({
-            success: false,
-            error: stderr || error.message,
-          });
-        }
-
-        return res.json({
-          success: true,
-          output: stdout,
-        });
-      }
-    );
+    return res.json({
+      success: true,
+      output: output,
+    });
   } catch (err) {
     return res.status(500).json({
       success: false,
