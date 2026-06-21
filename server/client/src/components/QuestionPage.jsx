@@ -17,7 +17,7 @@ const fetchQuestion = async () => {
 try {
 
   const response = await axios.get(
-    `https://codequest-v2.onrender.com/api/ai-question/${category}`
+    `http://16.171.134.145:5001/api/ai-question/${category}`
   );
 
   setQuestion(response.data.question);
@@ -71,20 +71,10 @@ const runCode = async () => {
   setLoading(true);
 
   try {
-    let uri = "";
-
-    if (category === "java") {
-      uri = "http://localhost:5001/api/execute/java";
-    } else if (category === "python") {
-      uri = "http://localhost:5001/api/execute/python";
-    } else {
-      setOutput("Language not supported");
-      setLoading(false);
-      return;
-    }
+    
 
     const response = await axios.post(
-       "http://localhost:5001api/compiler/run",
+       "http://16.171.134.145:5001/api/compiler/run",
        {
         language:category,
       code,
@@ -121,12 +111,6 @@ const runCode = async () => {
 };
 
 const nextQuestion = () => {
-
-if (!canNext) {
-  alert("Run correct code first!");
-  return;
-}
-
 fetchQuestion();
 
 };
@@ -229,7 +213,7 @@ padding: "30px",
 
     <button
       onClick={nextQuestion}
-      disabled={!canNext}
+      disabled={false}
       style={{
         padding: "12px 20px",
         backgroundColor: canNext ? "#3b82f6" : "gray",
