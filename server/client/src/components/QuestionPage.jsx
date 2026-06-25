@@ -95,6 +95,14 @@ const runCode = async () => {
       !result.toLowerCase().includes("exception")
     ) {
       setScore((prev) => prev + 10);
+      await axios.post(
+  "https://codequestdhanu.duckdns.org/api/leaderboard/add",
+  {
+    username: localStorage.getItem("username"),
+    score: score + 10,
+    category,
+  }
+);
       setCanNext(true);
     }
   } catch (error) {
