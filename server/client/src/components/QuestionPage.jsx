@@ -74,7 +74,7 @@ const runCode = async () => {
     
 
     const response = await axios.post(
-       "https://virtually-armor-advertising-archieved.trycloudflare.com/api/compiler/run",
+       "https://codequestdhanu.duckdns.org/api/compiler/run",
        {
         language:category,
       code,
