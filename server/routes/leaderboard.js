@@ -7,19 +7,26 @@ const User = require("../models/User");
 // SAVE SCORE
 router.post("/add", async (req, res) => {
   try {
-    const { userId, score, category } = req.body;
+    const { username, score, category } = req.body;
 
-    // User name fetch from database
-    const user = await User.findById(userId);
+    // Already user irukkarana check pannum
+    let existingUser = await Leaderboard.findOne({ username });
 
-    if (!user) {
-      return res.status(404).json({
-        error: "User not found",
+    if (existingUser) {
+      // Score update pannum
+      existingUser.score = score;
+      existingUser.category = category;
+
+      await existingUser.save();
+
+      return res.json({
+        message: "Leaderboard Updated Successfully",
       });
     }
 
+    // New user
     const newScore = new Leaderboard({
-      username: user.name,
+      username,
       score,
       category,
     });
@@ -29,8 +36,10 @@ router.post("/add", async (req, res) => {
     res.json({
       message: "Score Saved Successfully",
     });
+
   } catch (error) {
     console.log(error);
+
     res.status(500).json({
       error: "Failed to save score",
     });
