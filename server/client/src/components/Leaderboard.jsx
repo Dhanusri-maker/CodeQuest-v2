@@ -9,7 +9,7 @@ const Leaderboard = () => {
     useEffect(() => {
 
         axios
-            .get('http://codequest-v2.onrender.com/api/leaderboard')
+            .get('https://codequest-v2.onrender.com/api/leaderboard')
 
             .then((res) => {
 
