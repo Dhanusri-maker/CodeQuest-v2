@@ -6,6 +6,7 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+
   const navigate = useNavigate();
 
   const API_URL = "https://codequest-v2.onrender.com";
@@ -21,11 +22,22 @@ const Login = () => {
       });
 
       localStorage.setItem("token", res.data.token);
-      localStorage.setItem("user", JSON.stringify(res.data.user));
+      localStorage.setItem("username", res.data.name);
+      localStorage.setItem("email", res.data.email);
+
+      localStorage.setItem(
+        "user",
+        JSON.stringify({
+          name: res.data.name,
+          email: res.data.email,
+        })
+      );
+
+      alert("Login Successful ✅");
 
       navigate("/dashboard");
     } catch (err) {
-      alert("Login failed ❌");
+      alert(err.response?.data?.message || "Login failed ❌");
       console.log(err.response?.data || err.message);
     } finally {
       setLoading(false);
@@ -40,6 +52,8 @@ const Login = () => {
     };
 
     localStorage.setItem("token", "guest-token");
+    localStorage.setItem("username", guestUser.name);
+    localStorage.setItem("email", guestUser.email);
     localStorage.setItem("user", JSON.stringify(guestUser));
 
     navigate("/dashboard");
@@ -52,33 +66,57 @@ const Login = () => {
       <input
         type="email"
         placeholder="Email"
+        value={email}
         onChange={(e) => setEmail(e.target.value)}
       />
+
+      <br />
       <br />
 
       <input
         type="password"
         placeholder="Password"
+        value={password}
         onChange={(e) => setPassword(e.target.value)}
       />
+
+      <br />
       <br />
 
       <button onClick={handleLogin} disabled={loading}>
         {loading ? "Logging in..." : "Login"}
       </button>
 
-      <br /><br />
+      <br />
+      <br />
 
-      {/* GUEST LOGIN BUTTON */}
       <button
         onClick={handleGuestLogin}
         style={{
           backgroundColor: "gray",
           color: "white",
           padding: "10px",
+          cursor: "pointer",
         }}
       >
         Continue as Guest
+      </button>
+
+      <br />
+      <br />
+
+      <p>Don't have an account?</p>
+
+      <button
+        onClick={() => navigate("/signup")}
+        style={{
+          backgroundColor: "#00d4ff",
+          color: "black",
+          padding: "10px",
+          cursor: "pointer",
+        }}
+      >
+        Create Account
       </button>
     </div>
   );
